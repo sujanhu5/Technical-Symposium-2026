@@ -63,10 +63,12 @@
     <a href="#register" class="mm-register">Register →</a>
   </div>
 
-  <!-- ========== HERO ========== -->
+  <!-- ========== HERO (minimal) ========== -->
   <section class="hero" id="hero">
     <div class="hero-inner">
       <canvas id="hero-particles" class="hero-particles-canvas"></canvas>
+      <!-- Dispersion canvas overlays the text during scroll -->
+      <canvas id="dispersion-canvas" class="dispersion-canvas"></canvas>
 
       <div class="hero-content">
         <div class="hero-tag" id="hero-tag">
@@ -79,40 +81,7 @@
           <span class="hero-title-bottom"><span class="word">Symposium.</span></span>
         </h1>
 
-        <p class="hero-tagline" id="hero-tagline">
-          <span class="tl-word">Innovate.</span>
-          <span class="tl-word">Compete.</span>
-          <span class="tl-word">Celebrate.</span>
-        </p>
         <p class="hero-college" id="hero-college">SJB Institute of Technology, Bangalore</p>
-
-        <div class="hero-stats" id="hero-stats">
-          <div class="hero-stat-card">
-            <span class="stat-label">Team Size</span>
-            <span class="stat-value">2-4</span>
-            <span class="stat-sub">members</span>
-          </div>
-          <div class="hero-stat-card">
-            <span class="stat-label">Departments</span>
-            <span class="stat-value">4</span>
-            <span class="stat-sub">CSE · IS · ECE · EEE</span>
-          </div>
-          <div class="hero-stat-card">
-            <span class="stat-label">Events</span>
-            <span class="stat-value">3+</span>
-            <span class="stat-sub">and counting</span>
-          </div>
-          <div class="hero-stat-card">
-            <span class="stat-label">Legacy</span>
-            <span class="stat-value">25</span>
-            <span class="stat-sub">years</span>
-          </div>
-        </div>
-
-        <div class="hero-cta" id="hero-cta">
-          <a href="#register" class="btn-primary">Register →</a>
-          <a href="#events" class="btn-ghost">Explore Events</a>
-        </div>
       </div>
 
       <div class="hero-sys">
@@ -126,7 +95,7 @@
     </div>
   </section>
 
-  <!-- ========== ABOUT ========== -->
+  <!-- ========== ABOUT + REGISTER ========== -->
   <section class="section" id="about">
     <div class="section-inner section-wide">
       <div class="about-grid" data-anim>
@@ -137,7 +106,11 @@
             <span class="accent-text">excellence.</span>
           </h2>
           <p class="about-desc">The Silver Jubilee Technical Symposium isn't just an event — it's a celebration of 25 years of innovation, research, and academic excellence at SJB Institute of Technology.</p>
-          <p class="about-desc">Four departments. One mission. Bringing together the brightest minds to compete, collaborate, and push the boundaries of technology.</p>
+          <p class="about-desc">8 events. One mission. Bringing together the brightest minds to compete, collaborate, and push the boundaries of technology — with a total prize pool of ₹4,00,000.</p>
+          <div class="about-cta">
+            <a href="#register" class="btn-primary">Register Now →</a>
+            <a href="#events" class="btn-ghost">Explore Events</a>
+          </div>
         </div>
         <div class="about-numbers">
           <div class="about-num-item">
@@ -145,12 +118,12 @@
             <span class="about-num-label">Expected Participants</span>
           </div>
           <div class="about-num-item">
-            <span class="about-num">24</span>
-            <span class="about-num-label">Hours of Innovation</span>
+            <span class="about-num">₹4L</span>
+            <span class="about-num-label">Total Prize Pool</span>
           </div>
           <div class="about-num-item">
-            <span class="about-num">4</span>
-            <span class="about-num-label">Departments</span>
+            <span class="about-num">8</span>
+            <span class="about-num-label">Competitions</span>
           </div>
           <div class="about-num-item">
             <span class="about-num">25</span>
@@ -161,107 +134,100 @@
     </div>
   </section>
 
-  <!-- ========== DEPARTMENTS & EVENTS ========== -->
+  <!-- ========== EVENTS ========== -->
   <section class="section" id="events">
     <div class="section-inner section-wide">
       <div class="section-header" data-anim>
-        <span class="section-label">The Departments</span>
+        <span class="section-label">The Events</span>
         <h2 class="section-heading">
-          <span>Four tracks.</span>
-          <span class="accent-text">Infinite possibilities.</span>
+          <span>8 battles.</span>
+          <span class="accent-text">One arena.</span>
         </h2>
+        <p class="events-prize-line">Total Prize Pool — <strong>₹4,00,000</strong></p>
       </div>
 
-      <!-- Department Cards -->
-      <div class="dept-cards" data-anim>
-        <div class="dept-card dept-card-active" data-dept="cse">
-          <div class="dept-card-icon">
-            <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><polyline points="16 18 22 12 16 6"/><polyline points="8 6 2 12 8 18"/></svg>
-          </div>
-          <div class="dept-card-body">
-            <h3 class="dept-card-title">Computer Science & Engineering</h3>
-            <p class="dept-card-desc">From ideation to exploitation — build, break, and innovate.</p>
-            <span class="dept-card-count">3 Events</span>
-          </div>
-          <div class="dept-card-arrow">
-            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M7 17L17 7M17 7H7M17 7V17"/></svg>
-          </div>
-        </div>
+      <div class="events-bento" data-anim>
 
-        <div class="dept-card" data-dept="is">
-          <div class="dept-card-icon">
-            <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg>
+        <a href="#register" class="event-card event-card-wide">
+          <span class="ec-num">01</span>
+          <div class="ec-body">
+            <h3 class="ec-title">Ideathon</h3>
+            <p class="ec-desc">Progress from problem identification to ideation, prototyping, testing, and pitching over two days.</p>
+            <div class="ec-focus"><span>Ideate</span><span>Prototype</span><span>Test</span><span>Pitch</span></div>
           </div>
-          <div class="dept-card-body">
-            <h3 class="dept-card-title">Information Science</h3>
-            <p class="dept-card-desc">Events will be announced soon. Stay tuned.</p>
-            <span class="dept-card-count">Coming Soon</span>
-          </div>
-          <div class="dept-card-arrow">
-            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M7 17L17 7M17 7H7M17 7V17"/></svg>
-          </div>
-        </div>
+          <span class="ec-arrow">→</span>
+        </a>
 
-        <div class="dept-card" data-dept="ece">
-          <div class="dept-card-icon">
-            <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M18 3a3 3 0 0 0-3 3v12a3 3 0 0 0 3 3 3 3 0 0 0 3-3 3 3 0 0 0-3-3H6a3 3 0 0 0-3 3 3 3 0 0 0 3 3 3 3 0 0 0 3-3V6a3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3h12a3 3 0 0 0 3-3 3 3 0 0 0-3-3z"/></svg>
+        <a href="#register" class="event-card">
+          <span class="ec-num">02</span>
+          <div class="ec-body">
+            <h3 class="ec-title">App Development</h3>
+            <p class="ec-desc">Conceptualize, design, and develop a mobile/web application based on a common theme.</p>
+            <div class="ec-focus"><span>Ideas</span><span>Into</span><span>Applications</span></div>
           </div>
-          <div class="dept-card-body">
-            <h3 class="dept-card-title">Electronics & Communication</h3>
-            <p class="dept-card-desc">Events will be announced soon. Stay tuned.</p>
-            <span class="dept-card-count">Coming Soon</span>
-          </div>
-          <div class="dept-card-arrow">
-            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M7 17L17 7M17 7H7M17 7V17"/></svg>
-          </div>
-        </div>
+          <span class="ec-arrow">→</span>
+        </a>
 
-        <div class="dept-card" data-dept="eee">
-          <div class="dept-card-icon">
-            <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"/></svg>
+        <a href="#register" class="event-card">
+          <span class="ec-num">03</span>
+          <div class="ec-body">
+            <h3 class="ec-title">Zerocrypt CTF</h3>
+            <p class="ec-desc">A hands-on cybersecurity competition — solve real-world security problems and capture hidden flags.</p>
+            <div class="ec-focus"><span>Think</span><span>Exploit</span><span>Capture</span><span>Secure</span></div>
           </div>
-          <div class="dept-card-body">
-            <h3 class="dept-card-title">Electrical & Electronics</h3>
-            <p class="dept-card-desc">Events will be announced soon. Stay tuned.</p>
-            <span class="dept-card-count">Coming Soon</span>
-          </div>
-          <div class="dept-card-arrow">
-            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M7 17L17 7M17 7H7M17 7V17"/></svg>
-          </div>
-        </div>
-      </div>
+          <span class="ec-arrow">→</span>
+        </a>
 
-      <!-- CSE Event Details (expandable) -->
-      <div class="event-detail active" id="detail-cse" data-anim>
-        <div class="event-detail-header">
-          <span class="section-label">CSE Events</span>
-        </div>
-        <div class="event-detail-list">
-          <a href="#register" class="event-item">
-            <span class="event-item-num">01</span>
-            <div class="event-item-info">
-              <h4 class="event-item-name">Ideathon</h4>
-              <p class="event-item-tagline">Innovate Beyond Limits</p>
-            </div>
-            <span class="event-item-arrow">→</span>
-          </a>
-          <a href="#register" class="event-item">
-            <span class="event-item-num">02</span>
-            <div class="event-item-info">
-              <h4 class="event-item-name">Capture The Flag</h4>
-              <p class="event-item-tagline">Hack The System</p>
-            </div>
-            <span class="event-item-arrow">→</span>
-          </a>
-          <a href="#register" class="event-item">
-            <span class="event-item-num">03</span>
-            <div class="event-item-info">
-              <h4 class="event-item-name">App Development</h4>
-              <p class="event-item-tagline">Build What's Next</p>
-            </div>
-            <span class="event-item-arrow">→</span>
-          </a>
-        </div>
+        <a href="#register" class="event-card event-card-wide">
+          <span class="ec-num">04</span>
+          <div class="ec-body">
+            <h3 class="ec-title">AI Prompt Battle</h3>
+            <p class="ec-desc">Compete to create effective prompts for solving technical and creative problems using AI tools.</p>
+            <div class="ec-focus"><span>Prompt</span><span>Create</span><span>Solve</span><span>Innovate</span></div>
+          </div>
+          <span class="ec-arrow">→</span>
+        </a>
+
+        <a href="#register" class="event-card event-card-wide">
+          <span class="ec-num">05</span>
+          <div class="ec-body">
+            <h3 class="ec-title">Code Relay</h3>
+            <p class="ec-desc">Teams solve a programming problem in stages — each member continues from the previous member's code. No debugging tools allowed.</p>
+            <div class="ec-focus"><span>Code</span><span>Pass</span><span>Solve</span><span>Repeat</span></div>
+          </div>
+          <span class="ec-arrow">→</span>
+        </a>
+
+        <a href="#register" class="event-card">
+          <span class="ec-num">06</span>
+          <div class="ec-body">
+            <h3 class="ec-title">Hack & Hunt</h3>
+            <p class="ec-desc">Solve a series of technical clues, coding challenges, and logical puzzles to reach the final solution.</p>
+            <div class="ec-focus"><span>Explore</span><span>Analyze</span><span>Solve</span><span>Win</span></div>
+          </div>
+          <span class="ec-arrow">→</span>
+        </a>
+
+        <a href="#register" class="event-card">
+          <span class="ec-num">07</span>
+          <div class="ec-body">
+            <h3 class="ec-title">Green Tech Challenge</h3>
+            <p class="ec-desc">Develop technology-driven solutions for sustainability, renewable energy, water conservation, or waste reduction.</p>
+            <div class="ec-focus"><span>Greener Ideas</span><span>Cleaner Tomorrow</span></div>
+          </div>
+          <span class="ec-arrow">→</span>
+        </a>
+
+        <a href="#register" class="event-card event-card-wide">
+          <span class="ec-num">08</span>
+          <div class="ec-body">
+            <h3 class="ec-title">RoboInnovate</h3>
+            <p class="ec-desc">Teams from different disciplines collaborate to develop a working robotic solution for a real-world problem.</p>
+            <div class="ec-focus"><span>Build</span><span>Program</span><span>Innovate</span><span>Solve</span></div>
+          </div>
+          <span class="ec-arrow">→</span>
+        </a>
+
       </div>
     </div>
   </section>
@@ -281,9 +247,7 @@
         <div class="timeline-line"></div>
 
         <div class="timeline-item">
-          <div class="timeline-date">
-            <span class="tl-day">Sep 15</span>
-          </div>
+          <div class="timeline-date"><span class="tl-day">Sep 15</span></div>
           <div class="timeline-dot"></div>
           <div class="timeline-card">
             <h4 class="timeline-card-title">Registration Opens</h4>
@@ -292,9 +256,7 @@
         </div>
 
         <div class="timeline-item">
-          <div class="timeline-date">
-            <span class="tl-day">Oct 10</span>
-          </div>
+          <div class="timeline-date"><span class="tl-day">Oct 10</span></div>
           <div class="timeline-dot"></div>
           <div class="timeline-card">
             <h4 class="timeline-card-title">Registration Deadline</h4>
@@ -303,9 +265,7 @@
         </div>
 
         <div class="timeline-item">
-          <div class="timeline-date">
-            <span class="tl-day">Oct 20</span>
-          </div>
+          <div class="timeline-date"><span class="tl-day">Oct 20</span></div>
           <div class="timeline-dot"></div>
           <div class="timeline-card">
             <h4 class="timeline-card-title">Preliminary Rounds</h4>
@@ -314,9 +274,7 @@
         </div>
 
         <div class="timeline-item">
-          <div class="timeline-date">
-            <span class="tl-day">Oct 30</span>
-          </div>
+          <div class="timeline-date"><span class="tl-day">Oct 30</span></div>
           <div class="timeline-dot active"></div>
           <div class="timeline-card highlight">
             <h4 class="timeline-card-title">Grand Finale</h4>
@@ -326,13 +284,11 @@
         </div>
 
         <div class="timeline-item">
-          <div class="timeline-date">
-            <span class="tl-day">Oct 30</span>
-          </div>
+          <div class="timeline-date"><span class="tl-day">Oct 30</span></div>
           <div class="timeline-dot"></div>
           <div class="timeline-card">
             <h4 class="timeline-card-title">Awards & Celebration</h4>
-            <p class="timeline-card-desc">Prize distribution and celebration of 25 glorious years of SJBIT.</p>
+            <p class="timeline-card-desc">Prize distribution of ₹4,00,000 and celebration of 25 glorious years of SJBIT.</p>
             <span class="timeline-card-badge accent">SILVER JUBILEE</span>
           </div>
         </div>
@@ -350,37 +306,66 @@
             <span>SJB Institute of</span>
             <span class="accent-text">Technology.</span>
           </h2>
-          <p class="venue-address">BGS Health & Education City, Kengeri, Bangalore — 560060</p>
+          <p class="venue-address">No.67, BGS Health & Education City, Dr. Vishnuvardhan Rd, Kengeri, Bengaluru, Karnataka 560060</p>
           <div class="venue-transport">
             <div class="venue-transport-item">
               <span class="vt-icon">🚇</span>
               <div>
                 <span class="vt-label">Metro</span>
-                <span class="vt-desc">Closest station: Kengeri Bus Terminal</span>
+                <span class="vt-desc">Kengeri Bus Terminal Metro Station (~3 km)</span>
               </div>
             </div>
             <div class="venue-transport-item">
               <span class="vt-icon">🚌</span>
               <div>
                 <span class="vt-label">Bus</span>
-                <span class="vt-desc">BMTC buses to Kengeri / BGS campus</span>
+                <span class="vt-desc">BMTC Route 215G / 401M to BGS Campus Gate</span>
               </div>
             </div>
             <div class="venue-transport-item">
               <span class="vt-icon">🚗</span>
               <div>
                 <span class="vt-label">Drive</span>
-                <span class="vt-desc">~18 km from Majestic, via Mysore Road</span>
+                <span class="vt-desc">~22 km from Majestic, via NICE Road / Mysore Road</span>
+              </div>
+            </div>
+            <div class="venue-transport-item">
+              <span class="vt-icon">✈️</span>
+              <div>
+                <span class="vt-label">Airport</span>
+                <span class="vt-desc">~65 km from KIA (Kempegowda International Airport)</span>
               </div>
             </div>
           </div>
         </div>
         <div class="venue-visual">
-          <div class="venue-map-placeholder">
-            <span class="vmp-text">SJBIT CAMPUS</span>
-            <span class="vmp-sub">Kengeri, Bangalore</span>
-            <div class="vmp-pin"></div>
-          </div>
+          <a href="https://maps.google.com/?q=SJB+Institute+of+Technology,+No.67,+BGS+Health+and+Education+City,+Dr.+Vishnuvardhan+Rd,+Kengeri,+Bengaluru,+Karnataka+560060" target="_blank" rel="noopener" class="venue-map-link">
+            <div class="venue-map-card">
+              <div class="venue-map-bg">
+                <div class="map-grid"></div>
+                <div class="map-roads">
+                  <div class="map-road map-road-h"></div>
+                  <div class="map-road map-road-v"></div>
+                  <div class="map-road map-road-d"></div>
+                </div>
+                <div class="map-pin-wrap">
+                  <div class="map-pin-shadow"></div>
+                  <div class="map-pin">
+                    <svg width="32" height="42" viewBox="0 0 32 42" fill="none">
+                      <path d="M16 0C7.16 0 0 7.16 0 16c0 12 16 26 16 26s16-14 16-26C32 7.16 24.84 0 16 0z" fill="#ff4d00"/>
+                      <circle cx="16" cy="16" r="7" fill="#050505"/>
+                      <circle cx="16" cy="16" r="3" fill="#ff4d00"/>
+                    </svg>
+                  </div>
+                </div>
+              </div>
+              <div class="venue-map-info">
+                <span class="vmi-name">SJB Institute of Technology</span>
+                <span class="vmi-address">No.67, BGS Health & Education City, Dr. Vishnuvardhan Rd, Kengeri, Bengaluru 560060</span>
+                <span class="vmi-action">Open in Google Maps →</span>
+              </div>
+            </div>
+          </a>
         </div>
       </div>
     </div>
@@ -406,16 +391,16 @@
           <a href="#roadmap">Roadmap</a>
         </div>
         <div class="footer-col">
-          <h4>Departments</h4>
-          <a href="#events">CSE</a>
-          <a href="#events">IS</a>
-          <a href="#events">ECE</a>
-          <a href="#events">EEE</a>
+          <h4>Events</h4>
+          <a href="#events">Ideathon</a>
+          <a href="#events">App Development</a>
+          <a href="#events">Zerocrypt CTF</a>
+          <a href="#events">RoboInnovate</a>
         </div>
         <div class="footer-col">
           <h4>Contact</h4>
-          <a href="#">SJBIT, BGS Health & Education City</a>
-          <a href="#">Kengeri, Bangalore — 560060</a>
+          <a href="https://maps.google.com/?q=SJB+Institute+of+Technology,+Kengeri,+Bengaluru" target="_blank" rel="noopener">No.67, BGS Health & Education City</a>
+          <a href="https://maps.google.com/?q=SJB+Institute+of+Technology,+Kengeri,+Bengaluru" target="_blank" rel="noopener">Dr. Vishnuvardhan Rd, Kengeri, Bengaluru 560060</a>
           <a href="mailto:symposium@sjbit.edu.in">symposium@sjbit.edu.in</a>
         </div>
       </div>

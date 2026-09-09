@@ -8,159 +8,173 @@ window.addEventListener('load', () => {
   }, 2200);
 });
 
-// ===== ANIMATED GRID BACKGROUND (RVCE-inspired) =====
+// ===== PREMIUM BACKGROUND — Smoke + Aurora + Embers =====
 (function() {
   const c = document.getElementById('bg-canvas');
   if (!c) return;
   const ctx = c.getContext('2d');
   let mouse = { x: -1000, y: -1000 };
-  let scrollY = 0;
-  const GAP = 60;
-  let cols = 0, rows = 0;
-  let nodesFlat = [];
+  let W, H;
 
   function resize() {
-    c.width = window.innerWidth;
-    c.height = window.innerHeight;
-    cols = Math.ceil(c.width / GAP) + 1;
-    rows = Math.ceil(c.height / GAP) + 1;
-    nodesFlat = [];
-    for (let r = 0; r < rows; r++) {
-      for (let cl = 0; cl < cols; cl++) {
-        nodesFlat.push({
-          ox: cl * GAP, oy: r * GAP,
-          x: cl * GAP, y: r * GAP,
-          col: cl, row: r
-        });
-      }
-    }
+    W = c.width = window.innerWidth;
+    H = c.height = window.innerHeight;
   }
-
   resize();
   window.addEventListener('resize', resize);
+  document.addEventListener('mousemove', (e) => { mouse.x = e.clientX; mouse.y = e.clientY; });
 
-  document.addEventListener('mousemove', (e) => {
-    mouse.x = e.clientX;
-    mouse.y = e.clientY;
-  });
-  window.addEventListener('scroll', () => { scrollY = window.scrollY; });
+  // Smoke / nebula blobs
+  const blobs = [];
+  for (let i = 0; i < 6; i++) {
+    blobs.push({
+      x: Math.random() * 2000,
+      y: Math.random() * 2000,
+      radius: 150 + Math.random() * 250,
+      vx: (Math.random() - 0.5) * 0.15,
+      vy: (Math.random() - 0.5) * 0.12,
+      phase: Math.random() * Math.PI * 2,
+      breathSpeed: 0.003 + Math.random() * 0.004,
+      alpha: 0.02 + Math.random() * 0.02
+    });
+  }
+
+  // Flowing lines (like energy streams)
+  const streams = [];
+  for (let i = 0; i < 5; i++) {
+    const pts = [];
+    const startX = Math.random() * 2000;
+    const startY = Math.random() * 2000;
+    for (let j = 0; j < 8; j++) {
+      pts.push({
+        x: startX + j * 120 + (Math.random() - 0.5) * 80,
+        y: startY + (Math.random() - 0.5) * 200,
+        phase: Math.random() * Math.PI * 2,
+        amp: 20 + Math.random() * 40,
+        speed: 0.005 + Math.random() * 0.008
+      });
+    }
+    streams.push({ pts, alpha: 0.03 + Math.random() * 0.025 });
+  }
+
+  // Rising embers
+  const embers = [];
+  function spawnEmber() {
+    embers.push({
+      x: Math.random() * W,
+      y: H + 10,
+      r: Math.random() * 1.5 + 0.3,
+      vx: (Math.random() - 0.5) * 0.5,
+      vy: -(Math.random() * 1.0 + 0.3),
+      alpha: Math.random() * 0.5 + 0.2,
+      life: 0,
+      maxLife: 300 + Math.random() * 400,
+      wobble: Math.random() * Math.PI * 2,
+      wobbleSpeed: 0.015 + Math.random() * 0.025
+    });
+  }
 
   let t = 0;
-  const maxDist = 180;
-  const neighborOffsets = [[0,1],[1,0],[1,1],[-1,1]];
 
   function draw() {
-    ctx.clearRect(0, 0, c.width, c.height);
-    t += 0.008;
+    ctx.clearRect(0, 0, W, H);
+    t++;
 
-    for (const n of nodesFlat) {
-      const dx = mouse.x - n.ox;
-      const dy = mouse.y - n.oy;
-      const dist = Math.sqrt(dx * dx + dy * dy);
+    // Smoke / nebula blobs
+    for (const b of blobs) {
+      b.phase += b.breathSpeed;
+      b.x += b.vx;
+      b.y += b.vy;
 
-      if (dist < maxDist) {
-        const force = (1 - dist / maxDist);
-        n.x = n.ox - dx * force * 0.25;
-        n.y = n.oy - dy * force * 0.25;
-      } else {
-        n.x += (n.ox - n.x) * 0.08;
-        n.y += (n.oy - n.y) * 0.08;
-      }
+      if (b.x < -b.radius) b.x = W + b.radius;
+      if (b.x > W + b.radius) b.x = -b.radius;
+      if (b.y < -b.radius) b.y = H + b.radius;
+      if (b.y > H + b.radius) b.y = -b.radius;
+
+      const breathR = b.radius + Math.sin(b.phase) * 30;
+      const grad = ctx.createRadialGradient(b.x, b.y, 0, b.x, b.y, breathR);
+      grad.addColorStop(0, `rgba(255,77,0,${b.alpha})`);
+      grad.addColorStop(0.4, `rgba(255,50,0,${b.alpha * 0.4})`);
+      grad.addColorStop(1, 'transparent');
+      ctx.fillStyle = grad;
+      ctx.fillRect(b.x - breathR, b.y - breathR, breathR * 2, breathR * 2);
     }
 
-    // Draw grid lines first
-    ctx.lineWidth = 0.5;
-    for (const n of nodesFlat) {
-      const dx = mouse.x - n.ox;
-      const dy = mouse.y - n.oy;
-      const dist = Math.sqrt(dx * dx + dy * dy);
-
-      for (const [dr, dc] of neighborOffsets) {
-        const nr = n.row + dr;
-        const nc = n.col + dc;
-        if (nr < 0 || nr >= rows || nc < 0 || nc >= cols) continue;
-        const ni = nr * cols + nc;
-        const n2 = nodesFlat[ni];
-
-        const d2 = Math.sqrt((mouse.x - n2.ox) ** 2 + (mouse.y - n2.oy) ** 2);
-        const closest = Math.min(dist, d2);
-
-        let alpha = 0.025;
-        if (closest < maxDist) {
-          alpha = 0.025 + (1 - closest / maxDist) * 0.12;
-        }
-
-        ctx.beginPath();
-        ctx.moveTo(n.x, n.y);
-        ctx.lineTo(n2.x, n2.y);
-        ctx.strokeStyle = closest < maxDist
-          ? `rgba(255,77,0,${alpha})`
-          : `rgba(255,255,255,${alpha})`;
-        ctx.stroke();
-      }
-    }
-
-    // Draw dots
-    for (const n of nodesFlat) {
-      const dx = mouse.x - n.ox;
-      const dy = mouse.y - n.oy;
-      const dist = Math.sqrt(dx * dx + dy * dy);
-
-      let r = 1;
-      let alpha = 0.04;
-
-      if (dist < maxDist) {
-        const force = 1 - dist / maxDist;
-        r = 1 + force * 3;
-        alpha = 0.04 + force * 0.5;
-      }
-
-      // Subtle ambient pulse
-      const pulse = Math.sin(t * 2 + n.ox * 0.01 + n.oy * 0.01) * 0.015 + 0.015;
-      alpha += pulse;
-
+    // Flowing energy streams
+    for (const s of streams) {
       ctx.beginPath();
-      ctx.arc(n.x, n.y, r, 0, Math.PI * 2);
-      ctx.fillStyle = dist < maxDist
-        ? `rgba(255,77,0,${alpha})`
-        : `rgba(255,255,255,${alpha})`;
+      const pts = s.pts;
+      for (let i = 0; i < pts.length; i++) {
+        const p = pts[i];
+        p.phase += p.speed;
+        const px = p.x + Math.sin(p.phase) * p.amp * 0.5;
+        const py = p.y + Math.cos(p.phase) * p.amp;
+
+        // Wrap
+        if (px > W + 200) p.x -= W + 400;
+        if (px < -200) p.x += W + 400;
+
+        if (i === 0) ctx.moveTo(px, py);
+        else {
+          const prev = pts[i - 1];
+          const prevX = prev.x + Math.sin(prev.phase) * prev.amp * 0.5;
+          const prevY = prev.y + Math.cos(prev.phase) * prev.amp;
+          const cpx = (prevX + px) / 2;
+          const cpy = (prevY + py) / 2;
+          ctx.quadraticCurveTo(prevX, prevY, cpx, cpy);
+        }
+      }
+      ctx.strokeStyle = `rgba(255,77,0,${s.alpha})`;
+      ctx.lineWidth = 1.5;
+      ctx.stroke();
+    }
+
+    // Mouse glow
+    if (mouse.x > 0 && mouse.y > 0) {
+      const g1 = ctx.createRadialGradient(mouse.x, mouse.y, 0, mouse.x, mouse.y, 200);
+      g1.addColorStop(0, 'rgba(255,77,0,0.07)');
+      g1.addColorStop(0.5, 'rgba(255,40,0,0.025)');
+      g1.addColorStop(1, 'transparent');
+      ctx.fillStyle = g1;
+      ctx.beginPath();
+      ctx.arc(mouse.x, mouse.y, 200, 0, Math.PI * 2);
       ctx.fill();
     }
 
-    // Occasional shooting star
-    if (Math.random() > 0.997) {
-      shooters.push({
-        x: Math.random() * c.width,
-        y: Math.random() * c.height * 0.5,
-        l: Math.random() * 80 + 40,
-        sp: Math.random() * 8 + 4,
-        a: Math.PI / 4 + (Math.random() - 0.5) * 0.4,
-        o: 1, life: 0
-      });
-    }
-    for (let i = shooters.length - 1; i >= 0; i--) {
-      const ss = shooters[i];
-      ss.life += 0.025;
-      ss.x += Math.cos(ss.a) * ss.sp;
-      ss.y += Math.sin(ss.a) * ss.sp;
-      ss.o = Math.max(0, 1 - ss.life);
-      const g = ctx.createLinearGradient(ss.x, ss.y,
-        ss.x - Math.cos(ss.a) * ss.l, ss.y - Math.sin(ss.a) * ss.l);
-      g.addColorStop(0, `rgba(255,77,0,${ss.o * 0.6})`);
-      g.addColorStop(1, 'rgba(255,77,0,0)');
+    // Embers
+    if (Math.random() > 0.94) spawnEmber();
+    for (let i = embers.length - 1; i >= 0; i--) {
+      const e = embers[i];
+      e.life++;
+      e.wobble += e.wobbleSpeed;
+      e.x += e.vx + Math.sin(e.wobble) * 0.3;
+      e.y += e.vy;
+
+      const lifeRatio = e.life / e.maxLife;
+      const fadeIn = Math.min(lifeRatio * 5, 1);
+      const fadeOut = Math.max(0, 1 - (lifeRatio - 0.6) / 0.4);
+      const alpha = e.alpha * fadeIn * fadeOut;
+
+      if (alpha <= 0 || e.life > e.maxLife) {
+        embers.splice(i, 1);
+        continue;
+      }
+
+      // Glow halo
       ctx.beginPath();
-      ctx.moveTo(ss.x, ss.y);
-      ctx.lineTo(ss.x - Math.cos(ss.a) * ss.l, ss.y - Math.sin(ss.a) * ss.l);
-      ctx.strokeStyle = g;
-      ctx.lineWidth = 1;
-      ctx.stroke();
-      if (ss.o <= 0) shooters.splice(i, 1);
+      ctx.arc(e.x, e.y, e.r * 4, 0, Math.PI * 2);
+      ctx.fillStyle = `rgba(255,77,0,${alpha * 0.1})`;
+      ctx.fill();
+
+      // Core
+      ctx.beginPath();
+      ctx.arc(e.x, e.y, e.r, 0, Math.PI * 2);
+      ctx.fillStyle = `rgba(255,${100 + Math.random() * 50 | 0},0,${alpha})`;
+      ctx.fill();
     }
 
     requestAnimationFrame(draw);
   }
-
-  let shooters = [];
   draw();
 })();
 
@@ -311,34 +325,21 @@ window.addEventListener('scroll', () => {
 
 // ===== MOBILE MENU =====
 const hamburger = document.getElementById('hamburger');
-const mm = document.getElementById('mobile-menu');
-if (hamburger && mm) {
+const mmenu = document.getElementById('mobile-menu');
+if (hamburger && mmenu) {
   hamburger.addEventListener('click', () => {
     hamburger.classList.toggle('active');
-    mm.classList.toggle('active');
-    document.body.style.overflow = mm.classList.contains('active') ? 'hidden' : '';
+    mmenu.classList.toggle('active');
+    document.body.style.overflow = mmenu.classList.contains('active') ? 'hidden' : '';
   });
-  mm.querySelectorAll('a').forEach(a => {
+  mmenu.querySelectorAll('a').forEach(a => {
     a.addEventListener('click', () => {
       hamburger.classList.remove('active');
-      mm.classList.remove('active');
+      mmenu.classList.remove('active');
       document.body.style.overflow = '';
     });
   });
 }
-
-// ===== DEPARTMENT CARD SWITCHING =====
-document.querySelectorAll('.dept-card').forEach(card => {
-  card.addEventListener('click', () => {
-    document.querySelectorAll('.dept-card').forEach(c => c.classList.remove('dept-card-active'));
-    card.classList.add('dept-card-active');
-
-    const dept = card.dataset.dept;
-    document.querySelectorAll('.event-detail').forEach(d => d.classList.remove('active'));
-    const detail = document.getElementById('detail-' + dept);
-    if (detail) detail.classList.add('active');
-  });
-});
 
 // ===== SMOOTH SCROLL =====
 document.querySelectorAll('a[href^="#"]').forEach(a => {
@@ -352,10 +353,145 @@ document.querySelectorAll('a[href^="#"]').forEach(a => {
   });
 });
 
+// ===== PARTICLE DISPERSION ON SCROLL (fully reversible) =====
+function setupDispersion() {
+  const dc = document.getElementById('dispersion-canvas');
+  const heroTitle = document.getElementById('hero-title');
+  const heroTag = document.getElementById('hero-tag');
+  const heroCollege = document.getElementById('hero-college');
+  if (!dc || !heroTitle) return;
+
+  const ctx = dc.getContext('2d');
+  const heroInner = heroTitle.closest('.hero-inner');
+
+  function sampleText() {
+    const rect = heroInner.getBoundingClientRect();
+    dc.width = rect.width;
+    dc.height = rect.height;
+
+    const topSpan = heroTitle.querySelector('.hero-title-top');
+    const bottomSpan = heroTitle.querySelector('.hero-title-bottom');
+    const topSize = parseFloat(getComputedStyle(topSpan).fontSize);
+    const bottomSize = parseFloat(getComputedStyle(bottomSpan).fontSize);
+
+    ctx.clearRect(0, 0, dc.width, dc.height);
+
+    ctx.font = `400 ${topSize}px "Instrument Serif", Georgia, serif`;
+    ctx.textAlign = 'center';
+    ctx.fillStyle = '#f0f0f0';
+    const topRect = topSpan.getBoundingClientRect();
+    ctx.fillText('Technical', dc.width / 2, topRect.top - rect.top + topSize * 0.82);
+
+    ctx.font = `italic 400 ${bottomSize}px "Instrument Serif", Georgia, serif`;
+    ctx.fillStyle = '#ff4d00';
+    const bottomRect = bottomSpan.getBoundingClientRect();
+    ctx.fillText('Symposium.', dc.width / 2, bottomRect.top - rect.top + bottomSize * 0.82);
+
+    const imageData = ctx.getImageData(0, 0, dc.width, dc.height);
+    const pixels = imageData.data;
+    const dots = [];
+    const gap = 3;
+
+    for (let y = 0; y < dc.height; y += gap) {
+      for (let x = 0; x < dc.width; x += gap) {
+        const i = (y * dc.width + x) * 4;
+        if (pixels[i + 3] > 100) {
+          const isOrange = pixels[i] > 200 && pixels[i + 1] < 120;
+          const angle = Math.random() * Math.PI * 2;
+          const speed = Math.random() * 400 + 150;
+          dots.push({
+            ox: x, oy: y,
+            dx: Math.cos(angle) * speed,
+            dy: Math.sin(angle) * speed,
+            r: Math.random() * 1.4 + 0.4,
+            isOrange,
+            alpha: (pixels[i + 3] / 255) * (isOrange ? 0.9 : 0.85)
+          });
+        }
+      }
+    }
+
+    ctx.clearRect(0, 0, dc.width, dc.height);
+    return dots;
+  }
+
+  let particles = null;
+  let currentProgress = 0;
+  let rafId = null;
+
+  function drawFrame() {
+    if (!particles) return;
+    ctx.clearRect(0, 0, dc.width, dc.height);
+
+    const p = currentProgress;
+    const eased = p * p;
+
+    for (const d of particles) {
+      const x = d.ox + d.dx * eased;
+      const y = d.oy + d.dy * eased;
+      const alpha = d.alpha * (1 - p);
+
+      if (alpha <= 0.005) continue;
+
+      ctx.beginPath();
+      ctx.arc(x, y, d.r, 0, Math.PI * 2);
+      ctx.fillStyle = d.isOrange
+        ? `rgba(255,77,0,${alpha})`
+        : `rgba(240,240,240,${alpha})`;
+      ctx.fill();
+    }
+  }
+
+  function loop() {
+    drawFrame();
+    rafId = requestAnimationFrame(loop);
+  }
+
+  ScrollTrigger.create({
+    trigger: '.hero',
+    start: 'top top',
+    end: 'bottom top',
+    scrub: 0.3,
+    onUpdate: (self) => {
+      const prog = self.progress;
+
+      // Sample particles once
+      if (!particles && prog > 0.02) {
+        particles = sampleText();
+        loop();
+      }
+
+      if (prog > 0.02) {
+        const disperseP = Math.min((prog - 0.02) / 0.45, 1);
+        currentProgress = disperseP;
+        dc.style.opacity = '1';
+        // Hide original text, show canvas particles
+        heroTitle.style.opacity = disperseP > 0.01 ? '0' : '1';
+      } else {
+        // FULLY RESTORE — back at top
+        currentProgress = 0;
+        dc.style.opacity = '0';
+        heroTitle.style.opacity = '1';
+      }
+
+      // Fade tag and college with scroll (and restore fully at top)
+      const fade = Math.max(0, 1 - prog * 2.5);
+      if (heroTag) heroTag.style.opacity = String(fade);
+      if (heroCollege) heroCollege.style.opacity = String(fade);
+    },
+    onLeave: () => {
+      if (rafId) { cancelAnimationFrame(rafId); rafId = null; }
+    },
+    onEnterBack: () => {
+      if (particles && !rafId) loop();
+    }
+  });
+}
+
 // ===== HERO GSAP ANIMATION =====
 function startHeroAnim() {
   if (typeof gsap === 'undefined') {
-    document.querySelectorAll('[data-anim], .hero-tag, .hero-title, .hero-tagline, .hero-college, .hero-stats, .hero-cta, .hero-sys').forEach(el => {
+    document.querySelectorAll('[data-anim], .hero-tag, .hero-title, .hero-college, .hero-sys').forEach(el => {
       el.style.opacity = '1';
       el.style.transform = 'none';
     });
@@ -364,16 +500,25 @@ function startHeroAnim() {
 
   gsap.registerPlugin(ScrollTrigger);
 
-  const tl = gsap.timeline();
+  const tl = gsap.timeline({
+    onComplete: () => {
+      // After intro animation, set final states as inline styles
+      // so ScrollTrigger restore works correctly
+      const tag = document.getElementById('hero-tag');
+      const title = document.getElementById('hero-title');
+      const college = document.getElementById('hero-college');
+      if (tag) { tag.style.opacity = '1'; tag.style.transform = 'translateY(0px)'; }
+      if (title) { title.style.opacity = '1'; title.style.transform = 'translateY(0px)'; }
+      if (college) { college.style.opacity = '1'; college.style.transform = 'translateY(0px)'; }
+
+      setTimeout(setupDispersion, 200);
+    }
+  });
+
   tl.to('.hero-tag', { opacity:1, y:0, duration:.6, ease:'power3.out' })
     .to('.hero-title', { opacity:1, y:0, duration:.5, ease:'power3.out' }, '-=.2')
     .call(() => document.querySelector('.hero-title')?.classList.add('visible'))
-    .to('.hero-tagline', { opacity:1, y:0, duration:.4, ease:'power3.out' }, '-=.1')
-    .call(() => document.querySelector('.hero-tagline')?.classList.add('visible'))
     .to('.hero-college', { opacity:1, y:0, duration:.5, ease:'power3.out' }, '-=.2')
-    .to('.hero-stats .hero-stat-card', { opacity:1, y:0, duration:.5, stagger:.08, ease:'power3.out' }, '-=.2')
-    .to('.hero-stats', { opacity:1, y:0, duration:.01 }, '<')
-    .to('.hero-cta', { opacity:1, y:0, duration:.5, ease:'power3.out' }, '-=.3')
     .to('.hero-sys', { opacity:1, duration:.5 }, '-=.3');
 
   // Scroll-triggered sections
@@ -384,12 +529,6 @@ function startHeroAnim() {
     });
   });
 
-  // Fade hero on scroll
-  gsap.to('.hero-content', {
-    opacity: 0.15, ease:'none',
-    scrollTrigger: { trigger:'.hero', start:'center center', end:'bottom top', scrub:1 }
-  });
-
   // Timeline items stagger
   gsap.utils.toArray('.timeline-item').forEach((item, i) => {
     gsap.from(item, {
@@ -398,19 +537,11 @@ function startHeroAnim() {
     });
   });
 
-  // Department cards stagger
-  gsap.utils.toArray('.dept-card').forEach((card, i) => {
+  // Event cards stagger
+  gsap.utils.toArray('.event-card').forEach((card, i) => {
     gsap.from(card, {
-      opacity:0, y:20, duration:.5, delay: i * .08, ease:'power3.out',
+      opacity:0, y:30, scale: 0.95, duration:.6, delay: i * .06, ease:'power3.out',
       scrollTrigger: { trigger:card, start:'top 90%', toggleActions:'play none none none' }
-    });
-  });
-
-  // Event items stagger
-  gsap.utils.toArray('.event-item').forEach((item, i) => {
-    gsap.from(item, {
-      opacity:0, x:-20, duration:.5, delay: i * .08, ease:'power3.out',
-      scrollTrigger: { trigger:item, start:'top 92%', toggleActions:'play none none none' }
     });
   });
 
