@@ -24,31 +24,26 @@ window.addEventListener('load', () => {
   window.addEventListener('resize', resize);
   document.addEventListener('mousemove', (e) => { mouse.x = e.clientX; mouse.y = e.clientY; });
 
-  // Smoke / nebula blobs
   const blobs = [];
   for (let i = 0; i < 6; i++) {
     blobs.push({
-      x: Math.random() * 2000,
-      y: Math.random() * 2000,
+      x: Math.random() * 2000, y: Math.random() * 2000,
       radius: 150 + Math.random() * 250,
-      vx: (Math.random() - 0.5) * 0.15,
-      vy: (Math.random() - 0.5) * 0.12,
+      vx: (Math.random() - 0.5) * 0.15, vy: (Math.random() - 0.5) * 0.12,
       phase: Math.random() * Math.PI * 2,
       breathSpeed: 0.003 + Math.random() * 0.004,
       alpha: 0.02 + Math.random() * 0.02
     });
   }
 
-  // Flowing lines (like energy streams)
   const streams = [];
   for (let i = 0; i < 5; i++) {
     const pts = [];
-    const startX = Math.random() * 2000;
-    const startY = Math.random() * 2000;
+    const sx = Math.random() * 2000, sy = Math.random() * 2000;
     for (let j = 0; j < 8; j++) {
       pts.push({
-        x: startX + j * 120 + (Math.random() - 0.5) * 80,
-        y: startY + (Math.random() - 0.5) * 200,
+        x: sx + j * 120 + (Math.random() - 0.5) * 80,
+        y: sy + (Math.random() - 0.5) * 200,
         phase: Math.random() * Math.PI * 2,
         amp: 20 + Math.random() * 40,
         speed: 0.005 + Math.random() * 0.008
@@ -57,40 +52,31 @@ window.addEventListener('load', () => {
     streams.push({ pts, alpha: 0.03 + Math.random() * 0.025 });
   }
 
-  // Rising embers
   const embers = [];
   function spawnEmber() {
     embers.push({
-      x: Math.random() * W,
-      y: H + 10,
+      x: Math.random() * W, y: H + 10,
       r: Math.random() * 1.5 + 0.3,
-      vx: (Math.random() - 0.5) * 0.5,
-      vy: -(Math.random() * 1.0 + 0.3),
+      vx: (Math.random() - 0.5) * 0.5, vy: -(Math.random() * 1.0 + 0.3),
       alpha: Math.random() * 0.5 + 0.2,
-      life: 0,
-      maxLife: 300 + Math.random() * 400,
+      life: 0, maxLife: 300 + Math.random() * 400,
       wobble: Math.random() * Math.PI * 2,
       wobbleSpeed: 0.015 + Math.random() * 0.025
     });
   }
 
   let t = 0;
-
   function draw() {
     ctx.clearRect(0, 0, W, H);
     t++;
 
-    // Smoke / nebula blobs
     for (const b of blobs) {
       b.phase += b.breathSpeed;
-      b.x += b.vx;
-      b.y += b.vy;
-
+      b.x += b.vx; b.y += b.vy;
       if (b.x < -b.radius) b.x = W + b.radius;
       if (b.x > W + b.radius) b.x = -b.radius;
       if (b.y < -b.radius) b.y = H + b.radius;
       if (b.y > H + b.radius) b.y = -b.radius;
-
       const breathR = b.radius + Math.sin(b.phase) * 30;
       const grad = ctx.createRadialGradient(b.x, b.y, 0, b.x, b.y, breathR);
       grad.addColorStop(0, `rgba(255,77,0,${b.alpha})`);
@@ -100,28 +86,21 @@ window.addEventListener('load', () => {
       ctx.fillRect(b.x - breathR, b.y - breathR, breathR * 2, breathR * 2);
     }
 
-    // Flowing energy streams
     for (const s of streams) {
       ctx.beginPath();
-      const pts = s.pts;
-      for (let i = 0; i < pts.length; i++) {
-        const p = pts[i];
+      for (let i = 0; i < s.pts.length; i++) {
+        const p = s.pts[i];
         p.phase += p.speed;
         const px = p.x + Math.sin(p.phase) * p.amp * 0.5;
         const py = p.y + Math.cos(p.phase) * p.amp;
-
-        // Wrap
         if (px > W + 200) p.x -= W + 400;
         if (px < -200) p.x += W + 400;
-
         if (i === 0) ctx.moveTo(px, py);
         else {
-          const prev = pts[i - 1];
+          const prev = s.pts[i - 1];
           const prevX = prev.x + Math.sin(prev.phase) * prev.amp * 0.5;
           const prevY = prev.y + Math.cos(prev.phase) * prev.amp;
-          const cpx = (prevX + px) / 2;
-          const cpy = (prevY + py) / 2;
-          ctx.quadraticCurveTo(prevX, prevY, cpx, cpy);
+          ctx.quadraticCurveTo(prevX, prevY, (prevX + px) / 2, (prevY + py) / 2);
         }
       }
       ctx.strokeStyle = `rgba(255,77,0,${s.alpha})`;
@@ -129,7 +108,6 @@ window.addEventListener('load', () => {
       ctx.stroke();
     }
 
-    // Mouse glow
     if (mouse.x > 0 && mouse.y > 0) {
       const g1 = ctx.createRadialGradient(mouse.x, mouse.y, 0, mouse.x, mouse.y, 200);
       g1.addColorStop(0, 'rgba(255,77,0,0.07)');
@@ -141,7 +119,6 @@ window.addEventListener('load', () => {
       ctx.fill();
     }
 
-    // Embers
     if (Math.random() > 0.94) spawnEmber();
     for (let i = embers.length - 1; i >= 0; i--) {
       const e = embers[i];
@@ -149,24 +126,15 @@ window.addEventListener('load', () => {
       e.wobble += e.wobbleSpeed;
       e.x += e.vx + Math.sin(e.wobble) * 0.3;
       e.y += e.vy;
-
       const lifeRatio = e.life / e.maxLife;
       const fadeIn = Math.min(lifeRatio * 5, 1);
       const fadeOut = Math.max(0, 1 - (lifeRatio - 0.6) / 0.4);
       const alpha = e.alpha * fadeIn * fadeOut;
-
-      if (alpha <= 0 || e.life > e.maxLife) {
-        embers.splice(i, 1);
-        continue;
-      }
-
-      // Glow halo
+      if (alpha <= 0 || e.life > e.maxLife) { embers.splice(i, 1); continue; }
       ctx.beginPath();
       ctx.arc(e.x, e.y, e.r * 4, 0, Math.PI * 2);
       ctx.fillStyle = `rgba(255,77,0,${alpha * 0.1})`;
       ctx.fill();
-
-      // Core
       ctx.beginPath();
       ctx.arc(e.x, e.y, e.r, 0, Math.PI * 2);
       ctx.fillStyle = `rgba(255,${100 + Math.random() * 50 | 0},0,${alpha})`;
@@ -178,7 +146,7 @@ window.addEventListener('load', () => {
   draw();
 })();
 
-// ===== PRELOADER PARTICLE EFFECT =====
+// ===== PRELOADER — Stroke-Trace "25" =====
 (function() {
   const c = document.getElementById('preloader-canvas');
   if (!c) return;
@@ -186,51 +154,104 @@ window.addEventListener('load', () => {
   c.width = window.innerWidth;
   c.height = window.innerHeight;
 
-  const text = '25';
   const fontSize = Math.min(c.width * 0.35, 300);
+  const cx = c.width / 2, cy = c.height / 2;
+
+  // Sample the outline of "25" by drawing and extracting edge pixels
   ctx.font = `italic 400 ${fontSize}px "Instrument Serif", Georgia, serif`;
   ctx.textAlign = 'center';
   ctx.textBaseline = 'middle';
   ctx.fillStyle = '#fff';
-  ctx.fillText(text, c.width / 2, c.height / 2);
+  ctx.fillText('25', cx, cy);
 
-  const imageData = ctx.getImageData(0, 0, c.width, c.height);
-  const pixels = imageData.data;
-  const dots = [];
-  const gap = 4;
+  const imgData = ctx.getImageData(0, 0, c.width, c.height);
+  const px = imgData.data;
 
-  for (let y = 0; y < c.height; y += gap) {
-    for (let x = 0; x < c.width; x += gap) {
+  // Extract edge points (outline only)
+  const edgePoints = [];
+  const step = 2;
+  for (let y = 0; y < c.height; y += step) {
+    for (let x = 0; x < c.width; x += step) {
       const i = (y * c.width + x) * 4;
-      if (pixels[i + 3] > 128) {
-        dots.push({
-          tx: x, ty: y,
-          x: c.width / 2 + (Math.random() - 0.5) * c.width,
-          y: c.height / 2 + (Math.random() - 0.5) * c.height,
-          r: Math.random() * 1.5 + 0.5,
-          o: Math.random() * 0.8 + 0.2
-        });
+      if (px[i + 3] > 128) {
+        // Check if it's an edge (has a transparent neighbor)
+        let isEdge = false;
+        for (const [dx, dy] of [[-step,0],[step,0],[0,-step],[0,step]]) {
+          const nx = x + dx, ny = y + dy;
+          if (nx < 0 || ny < 0 || nx >= c.width || ny >= c.height) { isEdge = true; break; }
+          const ni = (ny * c.width + nx) * 4;
+          if (px[ni + 3] < 128) { isEdge = true; break; }
+        }
+        if (isEdge) edgePoints.push({ x, y });
       }
     }
   }
 
   ctx.clearRect(0, 0, c.width, c.height);
+
+  // Sort edge points roughly by angle from center for a coherent trace
+  const textCx = cx, textCy = cy;
+  edgePoints.sort((a, b) => {
+    const aa = Math.atan2(a.y - textCy, a.x - textCx);
+    const ba = Math.atan2(b.y - textCy, b.x - textCx);
+    return aa - ba;
+  });
+
   let startTime = performance.now();
+  const duration = 1.8;
+  const trailLength = 0.15;
 
   function animate(now) {
     const elapsed = (now - startTime) / 1000;
-    const progress = Math.min(elapsed / 1.8, 1);
-    const ease = 1 - Math.pow(1 - progress, 3);
+    const progress = Math.min(elapsed / duration, 1);
 
     ctx.clearRect(0, 0, c.width, c.height);
 
-    for (const d of dots) {
-      const cx = d.x + (d.tx - d.x) * ease;
-      const cy = d.y + (d.ty - d.y) * ease;
+    // Draw revealed portions with glow
+    const revealed = Math.floor(progress * edgePoints.length);
+
+    // Full text glow (fades in)
+    const textAlpha = Math.max(0, (progress - 0.3) / 0.7) * 0.15;
+    if (textAlpha > 0) {
+      ctx.font = `italic 400 ${fontSize}px "Instrument Serif", Georgia, serif`;
+      ctx.textAlign = 'center';
+      ctx.textBaseline = 'middle';
+      ctx.fillStyle = `rgba(255,77,0,${textAlpha})`;
+      ctx.fillText('25', cx, cy);
+    }
+
+    // Draw traced outline
+    for (let i = 0; i < revealed; i++) {
+      const p = edgePoints[i];
+      const recency = (revealed - i) / (edgePoints.length * trailLength);
+      const bright = recency < 1 ? recency : 0;
+      const baseAlpha = 0.3 + bright * 0.7;
+      const r = 1 + bright * 2;
+
       ctx.beginPath();
-      ctx.arc(cx, cy, d.r, 0, Math.PI * 2);
-      ctx.fillStyle = `rgba(255,77,0,${d.o * ease})`;
+      ctx.arc(p.x, p.y, r, 0, Math.PI * 2);
+      ctx.fillStyle = `rgba(255,77,0,${baseAlpha * (0.3 + progress * 0.7)})`;
       ctx.fill();
+
+      // Bright head glow
+      if (bright > 0.8) {
+        ctx.beginPath();
+        ctx.arc(p.x, p.y, r * 4, 0, Math.PI * 2);
+        ctx.fillStyle = `rgba(255,77,0,${bright * 0.2})`;
+        ctx.fill();
+      }
+    }
+
+    // Final state: solid outlined "25"
+    if (progress >= 1) {
+      ctx.font = `italic 400 ${fontSize}px "Instrument Serif", Georgia, serif`;
+      ctx.textAlign = 'center';
+      ctx.textBaseline = 'middle';
+      ctx.strokeStyle = 'rgba(255,77,0,0.6)';
+      ctx.lineWidth = 2;
+      ctx.strokeText('25', cx, cy);
+      ctx.fillStyle = 'rgba(255,77,0,0.12)';
+      ctx.fillText('25', cx, cy);
     }
 
     if (progress < 1) requestAnimationFrame(animate);
@@ -238,68 +259,61 @@ window.addEventListener('load', () => {
   requestAnimationFrame(animate);
 })();
 
-// ===== HERO PARTICLE TEXT =====
+// ===== HERO "25" — Glowing Outlined Text (no dots) =====
 (function() {
   const c = document.getElementById('hero-particles');
   if (!c) return;
   const ctx = c.getContext('2d');
-  let dots = [], mouse = { x: -1000, y: -1000 };
+  let mouse = { x: -1000, y: -1000 };
 
   function setup() {
     const rect = c.parentElement.getBoundingClientRect();
     c.width = rect.width;
     c.height = rect.height;
+  }
 
-    const text = '25';
+  let t = 0;
+  function animate() {
+    ctx.clearRect(0, 0, c.width, c.height);
+    t += 0.015;
+
     const fontSize = Math.min(c.width * 0.25, 250);
+    const cx = c.width / 2, cy = c.height / 2 - 20;
+
+    // Pulsing glow layers
+    const pulse = Math.sin(t) * 0.03 + 0.07;
+    const pulse2 = Math.sin(t * 0.7 + 1) * 0.02 + 0.05;
+
     ctx.font = `italic 400 ${fontSize}px "Instrument Serif", Georgia, serif`;
     ctx.textAlign = 'center';
     ctx.textBaseline = 'middle';
-    ctx.fillStyle = '#fff';
-    ctx.fillText(text, c.width / 2, c.height / 2 - 20);
 
-    const imageData = ctx.getImageData(0, 0, c.width, c.height);
-    const pixels = imageData.data;
-    dots = [];
-    const gap = 5;
+    // Outer glow
+    ctx.shadowColor = 'rgba(255,77,0,0.3)';
+    ctx.shadowBlur = 40 + Math.sin(t) * 10;
+    ctx.fillStyle = `rgba(255,77,0,${pulse})`;
+    ctx.fillText('25', cx, cy);
 
-    for (let y = 0; y < c.height; y += gap) {
-      for (let x = 0; x < c.width; x += gap) {
-        const i = (y * c.width + x) * 4;
-        if (pixels[i + 3] > 128) {
-          dots.push({
-            x, y, ox: x, oy: y,
-            r: Math.random() * 1.2 + 0.3,
-            isOrange: Math.random() > 0.6
-          });
-        }
-      }
-    }
-    ctx.clearRect(0, 0, c.width, c.height);
-  }
+    // Mid glow
+    ctx.shadowBlur = 20;
+    ctx.fillStyle = `rgba(255,77,0,${pulse2})`;
+    ctx.fillText('25', cx, cy);
+    ctx.shadowBlur = 0;
+    ctx.shadowColor = 'transparent';
 
-  function animate() {
-    ctx.clearRect(0, 0, c.width, c.height);
+    // Outline stroke
+    ctx.strokeStyle = `rgba(255,77,0,${0.15 + Math.sin(t * 1.2) * 0.05})`;
+    ctx.lineWidth = 1.5;
+    ctx.strokeText('25', cx, cy);
 
-    for (const d of dots) {
-      const dx = mouse.x - d.x;
-      const dy = mouse.y - d.y;
-      const dist = Math.sqrt(dx * dx + dy * dy);
-      const force = Math.max(0, 80 - dist) / 80;
-
-      if (force > 0) {
-        d.x -= dx * force * 0.15;
-        d.y -= dy * force * 0.15;
-      }
-
-      d.x += (d.ox - d.x) * 0.08;
-      d.y += (d.oy - d.y) * 0.08;
-
+    // Mouse interaction: bright spot near cursor
+    if (mouse.x > 0 && mouse.y > 0) {
+      const grad = ctx.createRadialGradient(mouse.x, mouse.y, 0, mouse.x, mouse.y, 120);
+      grad.addColorStop(0, 'rgba(255,77,0,0.08)');
+      grad.addColorStop(1, 'transparent');
+      ctx.fillStyle = grad;
       ctx.beginPath();
-      ctx.arc(d.x, d.y, d.r, 0, Math.PI * 2);
-      ctx.fillStyle = d.isOrange
-        ? 'rgba(255,77,0,0.5)'
-        : 'rgba(255,255,255,0.12)';
+      ctx.arc(mouse.x, mouse.y, 120, 0, Math.PI * 2);
       ctx.fill();
     }
 
@@ -314,7 +328,7 @@ window.addEventListener('load', () => {
   c.addEventListener('mouseleave', () => { mouse.x = -1000; mouse.y = -1000; });
 
   setTimeout(() => { setup(); animate(); }, 300);
-  window.addEventListener('resize', () => { setup(); });
+  window.addEventListener('resize', setup);
 })();
 
 // ===== NAVBAR =====
@@ -353,7 +367,7 @@ document.querySelectorAll('a[href^="#"]').forEach(a => {
   });
 });
 
-// ===== PARTICLE DISPERSION ON SCROLL (fully reversible) =====
+// ===== GEOMETRIC SHARD DISPERSION ON SCROLL (fully reversible) =====
 function setupDispersion() {
   const dc = document.getElementById('dispersion-canvas');
   const heroTitle = document.getElementById('hero-title');
@@ -364,7 +378,7 @@ function setupDispersion() {
   const ctx = dc.getContext('2d');
   const heroInner = heroTitle.closest('.hero-inner');
 
-  function sampleText() {
+  function sampleShards() {
     const rect = heroInner.getBoundingClientRect();
     dc.width = rect.width;
     dc.height = rect.height;
@@ -374,71 +388,113 @@ function setupDispersion() {
     const topSize = parseFloat(getComputedStyle(topSpan).fontSize);
     const bottomSize = parseFloat(getComputedStyle(bottomSpan).fontSize);
 
+    // Draw text to sample
     ctx.clearRect(0, 0, dc.width, dc.height);
-
     ctx.font = `400 ${topSize}px "Instrument Serif", Georgia, serif`;
     ctx.textAlign = 'center';
     ctx.fillStyle = '#f0f0f0';
     const topRect = topSpan.getBoundingClientRect();
-    ctx.fillText('Technical', dc.width / 2, topRect.top - rect.top + topSize * 0.82);
+    const topY = topRect.top - rect.top;
+    ctx.fillText('Technical', dc.width / 2, topY + topSize * 0.82);
 
     ctx.font = `italic 400 ${bottomSize}px "Instrument Serif", Georgia, serif`;
     ctx.fillStyle = '#ff4d00';
     const bottomRect = bottomSpan.getBoundingClientRect();
-    ctx.fillText('Symposium.', dc.width / 2, bottomRect.top - rect.top + bottomSize * 0.82);
+    const bottomY = bottomRect.top - rect.top;
+    ctx.fillText('Symposium.', dc.width / 2, bottomY + bottomSize * 0.82);
 
-    const imageData = ctx.getImageData(0, 0, dc.width, dc.height);
-    const pixels = imageData.data;
-    const dots = [];
-    const gap = 3;
+    // Capture the full rendered text as image data
+    const fullImage = ctx.getImageData(0, 0, dc.width, dc.height);
+    ctx.clearRect(0, 0, dc.width, dc.height);
 
-    for (let y = 0; y < dc.height; y += gap) {
-      for (let x = 0; x < dc.width; x += gap) {
-        const i = (y * dc.width + x) * 4;
-        if (pixels[i + 3] > 100) {
-          const isOrange = pixels[i] > 200 && pixels[i + 1] < 120;
-          const angle = Math.random() * Math.PI * 2;
-          const speed = Math.random() * 400 + 150;
-          dots.push({
-            ox: x, oy: y,
-            dx: Math.cos(angle) * speed,
-            dy: Math.sin(angle) * speed,
-            r: Math.random() * 1.4 + 0.4,
-            isOrange,
-            alpha: (pixels[i + 3] / 255) * (isOrange ? 0.9 : 0.85)
+    // Create rectangular shards from the text area
+    const shards = [];
+    const shardW = 18 + Math.random() * 12;
+    const shardH = 22 + Math.random() * 10;
+
+    // Find text bounds
+    const textTop = Math.min(topY, bottomY) - 10;
+    const textBottom = Math.max(topY + topSize, bottomY + bottomSize) + 10;
+    const textLeft = dc.width * 0.1;
+    const textRight = dc.width * 0.9;
+
+    for (let y = textTop; y < textBottom; y += shardH) {
+      for (let x = textLeft; x < textRight; x += shardW) {
+        const w = Math.min(shardW, textRight - x);
+        const h = Math.min(shardH, textBottom - y);
+
+        // Check if this shard has any text pixels
+        let hasContent = false;
+        for (let sy = Math.max(0, y | 0); sy < Math.min(dc.height, (y + h) | 0); sy += 3) {
+          for (let sx = Math.max(0, x | 0); sx < Math.min(dc.width, (x + w) | 0); sx += 3) {
+            const i = (sy * dc.width + sx) * 4;
+            if (fullImage.data[i + 3] > 50) { hasContent = true; break; }
+          }
+          if (hasContent) break;
+        }
+
+        if (hasContent) {
+          const centerX = x + w / 2;
+          const centerY = y + h / 2;
+          const fromCenter = centerX - dc.width / 2;
+          const angle = Math.atan2(centerY - dc.height / 2, fromCenter);
+
+          shards.push({
+            x: x | 0, y: y | 0, w: w | 0, h: h | 0,
+            // Movement direction: away from center with some randomness
+            tx: Math.cos(angle + (Math.random() - 0.5) * 0.8) * (200 + Math.random() * 300),
+            ty: Math.sin(angle + (Math.random() - 0.5) * 0.8) * (150 + Math.random() * 200),
+            rot: (Math.random() - 0.5) * 60,
+            delay: Math.random() * 0.3
           });
         }
       }
     }
 
-    ctx.clearRect(0, 0, dc.width, dc.height);
-    return dots;
+    return { shards, image: fullImage };
   }
 
-  let particles = null;
+  let data = null;
   let currentProgress = 0;
   let rafId = null;
 
   function drawFrame() {
-    if (!particles) return;
+    if (!data) return;
     ctx.clearRect(0, 0, dc.width, dc.height);
 
     const p = currentProgress;
-    const eased = p * p;
 
-    for (const d of particles) {
-      const x = d.ox + d.dx * eased;
-      const y = d.oy + d.dy * eased;
-      const alpha = d.alpha * (1 - p);
+    // Put the full image data, then mask out shards based on progress
+    ctx.putImageData(data.image, 0, 0);
 
-      if (alpha <= 0.005) continue;
+    if (p > 0.001) {
+      // Clear original, then draw shards at offset positions
+      ctx.clearRect(0, 0, dc.width, dc.height);
 
-      ctx.beginPath();
-      ctx.arc(x, y, d.r, 0, Math.PI * 2);
-      ctx.fillStyle = d.isOrange
-        ? `rgba(255,77,0,${alpha})`
-        : `rgba(240,240,240,${alpha})`;
-      ctx.fill();
+      // Create offscreen canvas with the text
+      const off = document.createElement('canvas');
+      off.width = dc.width;
+      off.height = dc.height;
+      off.getContext('2d').putImageData(data.image, 0, 0);
+
+      for (const s of data.shards) {
+        const sp = Math.max(0, Math.min(1, (p - s.delay) / (1 - s.delay)));
+        const ease = sp * sp;
+
+        const offsetX = s.tx * ease;
+        const offsetY = s.ty * ease;
+        const rot = s.rot * ease * (Math.PI / 180);
+        const alpha = 1 - sp;
+
+        if (alpha <= 0.01) continue;
+
+        ctx.save();
+        ctx.globalAlpha = alpha;
+        ctx.translate(s.x + s.w / 2 + offsetX, s.y + s.h / 2 + offsetY);
+        ctx.rotate(rot);
+        ctx.drawImage(off, s.x, s.y, s.w, s.h, -s.w / 2, -s.h / 2, s.w, s.h);
+        ctx.restore();
+      }
     }
   }
 
@@ -455,9 +511,8 @@ function setupDispersion() {
     onUpdate: (self) => {
       const prog = self.progress;
 
-      // Sample particles once
-      if (!particles && prog > 0.02) {
-        particles = sampleText();
+      if (!data && prog > 0.02) {
+        data = sampleShards();
         loop();
       }
 
@@ -465,16 +520,13 @@ function setupDispersion() {
         const disperseP = Math.min((prog - 0.02) / 0.45, 1);
         currentProgress = disperseP;
         dc.style.opacity = '1';
-        // Hide original text, show canvas particles
         heroTitle.style.opacity = disperseP > 0.01 ? '0' : '1';
       } else {
-        // FULLY RESTORE — back at top
         currentProgress = 0;
         dc.style.opacity = '0';
         heroTitle.style.opacity = '1';
       }
 
-      // Fade tag and college with scroll (and restore fully at top)
       const fade = Math.max(0, 1 - prog * 2.5);
       if (heroTag) heroTag.style.opacity = String(fade);
       if (heroCollege) heroCollege.style.opacity = String(fade);
@@ -483,7 +535,7 @@ function setupDispersion() {
       if (rafId) { cancelAnimationFrame(rafId); rafId = null; }
     },
     onEnterBack: () => {
-      if (particles && !rafId) loop();
+      if (data && !rafId) loop();
     }
   });
 }
@@ -502,15 +554,12 @@ function startHeroAnim() {
 
   const tl = gsap.timeline({
     onComplete: () => {
-      // After intro animation, set final states as inline styles
-      // so ScrollTrigger restore works correctly
       const tag = document.getElementById('hero-tag');
       const title = document.getElementById('hero-title');
       const college = document.getElementById('hero-college');
       if (tag) { tag.style.opacity = '1'; tag.style.transform = 'translateY(0px)'; }
       if (title) { title.style.opacity = '1'; title.style.transform = 'translateY(0px)'; }
       if (college) { college.style.opacity = '1'; college.style.transform = 'translateY(0px)'; }
-
       setTimeout(setupDispersion, 200);
     }
   });
@@ -521,7 +570,6 @@ function startHeroAnim() {
     .to('.hero-college', { opacity:1, y:0, duration:.5, ease:'power3.out' }, '-=.2')
     .to('.hero-sys', { opacity:1, duration:.5 }, '-=.3');
 
-  // Scroll-triggered sections
   document.querySelectorAll('[data-anim]').forEach(el => {
     gsap.to(el, {
       opacity:1, y:0, duration:.8, ease:'power3.out',
@@ -529,7 +577,6 @@ function startHeroAnim() {
     });
   });
 
-  // Timeline items stagger
   gsap.utils.toArray('.timeline-item').forEach((item, i) => {
     gsap.from(item, {
       opacity:0, x:-30, duration:.6, delay: i * .1, ease:'power3.out',
@@ -537,7 +584,6 @@ function startHeroAnim() {
     });
   });
 
-  // Event cards stagger
   gsap.utils.toArray('.event-card').forEach((card, i) => {
     gsap.from(card, {
       opacity:0, y:30, scale: 0.95, duration:.6, delay: i * .06, ease:'power3.out',
@@ -545,7 +591,6 @@ function startHeroAnim() {
     });
   });
 
-  // About number items
   gsap.utils.toArray('.about-num-item').forEach((item, i) => {
     gsap.from(item, {
       opacity:0, scale:.9, duration:.5, delay: i * .1, ease:'power3.out',
