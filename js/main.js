@@ -5,7 +5,7 @@ window.addEventListener('load', () => {
     document.getElementById('preloader').classList.add('done');
     document.body.style.overflow = '';
     startHeroAnim();
-  }, 2200);
+  }, 4200);
 });
 
 // ===== PREMIUM BACKGROUND — Smoke + Aurora + Embers =====
@@ -198,7 +198,7 @@ window.addEventListener('load', () => {
   });
 
   let startTime = performance.now();
-  const duration = 1.8;
+  const duration = 3.5;
   const trailLength = 0.15;
 
   function animate(now) {
@@ -367,6 +367,135 @@ document.querySelectorAll('a[href^="#"]').forEach(a => {
   });
 });
 
+// ===== SHARED: Sample shards from hero title =====
+function sampleHeroShards(dc, ctx, heroTitle, heroInner) {
+  const rect = heroInner.getBoundingClientRect();
+  dc.width = rect.width;
+  dc.height = rect.height;
+
+  const topSpan = heroTitle.querySelector('.hero-title-top');
+  const bottomSpan = heroTitle.querySelector('.hero-title-bottom');
+  const topSize = parseFloat(getComputedStyle(topSpan).fontSize);
+  const bottomSize = parseFloat(getComputedStyle(bottomSpan).fontSize);
+
+  ctx.clearRect(0, 0, dc.width, dc.height);
+  ctx.font = `400 ${topSize}px "Instrument Serif", Georgia, serif`;
+  ctx.textAlign = 'center';
+  ctx.fillStyle = '#f0f0f0';
+  const topRect = topSpan.getBoundingClientRect();
+  const topY = topRect.top - rect.top;
+  ctx.fillText('Technical', dc.width / 2, topY + topSize * 0.82);
+
+  ctx.font = `italic 400 ${bottomSize}px "Instrument Serif", Georgia, serif`;
+  ctx.fillStyle = '#ff4d00';
+  const bottomRect = bottomSpan.getBoundingClientRect();
+  const bottomY = bottomRect.top - rect.top;
+  ctx.fillText('Symposium.', dc.width / 2, bottomY + bottomSize * 0.82);
+
+  const fullImage = ctx.getImageData(0, 0, dc.width, dc.height);
+  ctx.clearRect(0, 0, dc.width, dc.height);
+
+  const shards = [];
+  const shardW = 18 + Math.random() * 12;
+  const shardH = 22 + Math.random() * 10;
+  const textTop = Math.min(topY, bottomY) - 10;
+  const textBottom = Math.max(topY + topSize, bottomY + bottomSize) + 10;
+  const textLeft = dc.width * 0.1;
+  const textRight = dc.width * 0.9;
+
+  for (let y = textTop; y < textBottom; y += shardH) {
+    for (let x = textLeft; x < textRight; x += shardW) {
+      const w = Math.min(shardW, textRight - x);
+      const h = Math.min(shardH, textBottom - y);
+      let hasContent = false;
+      for (let sy = Math.max(0, y | 0); sy < Math.min(dc.height, (y + h) | 0); sy += 3) {
+        for (let sx = Math.max(0, x | 0); sx < Math.min(dc.width, (x + w) | 0); sx += 3) {
+          const i = (sy * dc.width + sx) * 4;
+          if (fullImage.data[i + 3] > 50) { hasContent = true; break; }
+        }
+        if (hasContent) break;
+      }
+      if (hasContent) {
+        const centerX = x + w / 2;
+        const centerY = y + h / 2;
+        const angle = Math.atan2(centerY - dc.height / 2, centerX - dc.width / 2);
+        shards.push({
+          x: x | 0, y: y | 0, w: w | 0, h: h | 0,
+          tx: Math.cos(angle + (Math.random() - 0.5) * 0.8) * (200 + Math.random() * 300),
+          ty: Math.sin(angle + (Math.random() - 0.5) * 0.8) * (150 + Math.random() * 200),
+          rot: (Math.random() - 0.5) * 60,
+          delay: Math.random() * 0.3
+        });
+      }
+    }
+  }
+  return { shards, image: fullImage };
+}
+
+// ===== SHARD ASSEMBLY INTRO (reverse of dispersion) =====
+function assembleTitle(onDone) {
+  const dc = document.getElementById('dispersion-canvas');
+  const heroTitle = document.getElementById('hero-title');
+  if (!dc || !heroTitle) { onDone(); return; }
+
+  const ctx = dc.getContext('2d');
+  const heroInner = heroTitle.closest('.hero-inner');
+
+  heroTitle.style.opacity = '1';
+  heroTitle.style.transform = 'translateY(0px)';
+  heroTitle.classList.add('visible');
+
+  const data = sampleHeroShards(dc, ctx, heroTitle, heroInner);
+  heroTitle.style.opacity = '0';
+
+  dc.style.opacity = '1';
+
+  const off = document.createElement('canvas');
+  off.width = dc.width;
+  off.height = dc.height;
+  off.getContext('2d').putImageData(data.image, 0, 0);
+
+  const duration = 2200;
+  const startTime = performance.now();
+
+  function animate(now) {
+    const elapsed = now - startTime;
+    const rawP = Math.min(elapsed / duration, 1);
+    const progress = 1 - rawP;
+
+    ctx.clearRect(0, 0, dc.width, dc.height);
+
+    if (progress < 0.001) {
+      ctx.putImageData(data.image, 0, 0);
+    } else {
+      for (const s of data.shards) {
+        const sp = Math.max(0, Math.min(1, (progress - s.delay) / (1 - s.delay)));
+        const ease = sp * sp;
+        const offsetX = s.tx * ease;
+        const offsetY = s.ty * ease;
+        const rot = s.rot * ease * (Math.PI / 180);
+        const alpha = 1 - sp;
+        if (alpha <= 0.01) continue;
+        ctx.save();
+        ctx.globalAlpha = alpha;
+        ctx.translate(s.x + s.w / 2 + offsetX, s.y + s.h / 2 + offsetY);
+        ctx.rotate(rot);
+        ctx.drawImage(off, s.x, s.y, s.w, s.h, -s.w / 2, -s.h / 2, s.w, s.h);
+        ctx.restore();
+      }
+    }
+
+    if (rawP < 1) {
+      requestAnimationFrame(animate);
+    } else {
+      dc.style.opacity = '0';
+      heroTitle.style.opacity = '1';
+      onDone();
+    }
+  }
+  requestAnimationFrame(animate);
+}
+
 // ===== GEOMETRIC SHARD DISPERSION ON SCROLL (fully reversible) =====
 function setupDispersion() {
   const dc = document.getElementById('dispersion-canvas');
@@ -378,82 +507,6 @@ function setupDispersion() {
   const ctx = dc.getContext('2d');
   const heroInner = heroTitle.closest('.hero-inner');
 
-  function sampleShards() {
-    const rect = heroInner.getBoundingClientRect();
-    dc.width = rect.width;
-    dc.height = rect.height;
-
-    const topSpan = heroTitle.querySelector('.hero-title-top');
-    const bottomSpan = heroTitle.querySelector('.hero-title-bottom');
-    const topSize = parseFloat(getComputedStyle(topSpan).fontSize);
-    const bottomSize = parseFloat(getComputedStyle(bottomSpan).fontSize);
-
-    // Draw text to sample
-    ctx.clearRect(0, 0, dc.width, dc.height);
-    ctx.font = `400 ${topSize}px "Instrument Serif", Georgia, serif`;
-    ctx.textAlign = 'center';
-    ctx.fillStyle = '#f0f0f0';
-    const topRect = topSpan.getBoundingClientRect();
-    const topY = topRect.top - rect.top;
-    ctx.fillText('Technical', dc.width / 2, topY + topSize * 0.82);
-
-    ctx.font = `italic 400 ${bottomSize}px "Instrument Serif", Georgia, serif`;
-    ctx.fillStyle = '#ff4d00';
-    const bottomRect = bottomSpan.getBoundingClientRect();
-    const bottomY = bottomRect.top - rect.top;
-    ctx.fillText('Symposium.', dc.width / 2, bottomY + bottomSize * 0.82);
-
-    // Capture the full rendered text as image data
-    const fullImage = ctx.getImageData(0, 0, dc.width, dc.height);
-    ctx.clearRect(0, 0, dc.width, dc.height);
-
-    // Create rectangular shards from the text area
-    const shards = [];
-    const shardW = 18 + Math.random() * 12;
-    const shardH = 22 + Math.random() * 10;
-
-    // Find text bounds
-    const textTop = Math.min(topY, bottomY) - 10;
-    const textBottom = Math.max(topY + topSize, bottomY + bottomSize) + 10;
-    const textLeft = dc.width * 0.1;
-    const textRight = dc.width * 0.9;
-
-    for (let y = textTop; y < textBottom; y += shardH) {
-      for (let x = textLeft; x < textRight; x += shardW) {
-        const w = Math.min(shardW, textRight - x);
-        const h = Math.min(shardH, textBottom - y);
-
-        // Check if this shard has any text pixels
-        let hasContent = false;
-        for (let sy = Math.max(0, y | 0); sy < Math.min(dc.height, (y + h) | 0); sy += 3) {
-          for (let sx = Math.max(0, x | 0); sx < Math.min(dc.width, (x + w) | 0); sx += 3) {
-            const i = (sy * dc.width + sx) * 4;
-            if (fullImage.data[i + 3] > 50) { hasContent = true; break; }
-          }
-          if (hasContent) break;
-        }
-
-        if (hasContent) {
-          const centerX = x + w / 2;
-          const centerY = y + h / 2;
-          const fromCenter = centerX - dc.width / 2;
-          const angle = Math.atan2(centerY - dc.height / 2, fromCenter);
-
-          shards.push({
-            x: x | 0, y: y | 0, w: w | 0, h: h | 0,
-            // Movement direction: away from center with some randomness
-            tx: Math.cos(angle + (Math.random() - 0.5) * 0.8) * (200 + Math.random() * 300),
-            ty: Math.sin(angle + (Math.random() - 0.5) * 0.8) * (150 + Math.random() * 200),
-            rot: (Math.random() - 0.5) * 60,
-            delay: Math.random() * 0.3
-          });
-        }
-      }
-    }
-
-    return { shards, image: fullImage };
-  }
-
   let data = null;
   let currentProgress = 0;
   let rafId = null;
@@ -464,14 +517,11 @@ function setupDispersion() {
 
     const p = currentProgress;
 
-    // Put the full image data, then mask out shards based on progress
     ctx.putImageData(data.image, 0, 0);
 
     if (p > 0.001) {
-      // Clear original, then draw shards at offset positions
       ctx.clearRect(0, 0, dc.width, dc.height);
 
-      // Create offscreen canvas with the text
       const off = document.createElement('canvas');
       off.width = dc.width;
       off.height = dc.height;
@@ -512,12 +562,12 @@ function setupDispersion() {
       const prog = self.progress;
 
       if (!data && prog > 0.02) {
-        data = sampleShards();
+        data = sampleHeroShards(dc, ctx, heroTitle, heroInner);
         loop();
       }
 
       if (prog > 0.02) {
-        const disperseP = Math.min((prog - 0.02) / 0.45, 1);
+        const disperseP = Math.min((prog - 0.02) / 0.75, 1);
         currentProgress = disperseP;
         dc.style.opacity = '1';
         heroTitle.style.opacity = disperseP > 0.01 ? '0' : '1';
@@ -527,7 +577,7 @@ function setupDispersion() {
         heroTitle.style.opacity = '1';
       }
 
-      const fade = Math.max(0, 1 - prog * 2.5);
+      const fade = Math.max(0, 1 - prog * 1.5);
       if (heroTag) heroTag.style.opacity = String(fade);
       if (heroCollege) heroCollege.style.opacity = String(fade);
     },
@@ -552,23 +602,28 @@ function startHeroAnim() {
 
   gsap.registerPlugin(ScrollTrigger);
 
-  const tl = gsap.timeline({
+  gsap.to('.hero-tag', {
+    opacity:1, y:0, scale:1, duration:1.2, ease:'power2.out',
     onComplete: () => {
       const tag = document.getElementById('hero-tag');
-      const title = document.getElementById('hero-title');
-      const college = document.getElementById('hero-college');
-      if (tag) { tag.style.opacity = '1'; tag.style.transform = 'translateY(0px)'; }
-      if (title) { title.style.opacity = '1'; title.style.transform = 'translateY(0px)'; }
-      if (college) { college.style.opacity = '1'; college.style.transform = 'translateY(0px)'; }
-      setTimeout(setupDispersion, 200);
+      if (tag) { tag.style.opacity = '1'; tag.style.transform = 'translateY(0px) scale(1)'; }
+
+      assembleTitle(() => {
+        const title = document.getElementById('hero-title');
+        const college = document.getElementById('hero-college');
+        if (title) { title.style.opacity = '1'; title.style.transform = 'translateY(0px)'; }
+
+        gsap.to('.hero-college', {
+          opacity:1, y:0, duration:1, ease:'power2.out',
+          onComplete: () => {
+            if (college) { college.style.opacity = '1'; college.style.transform = 'translateY(0px)'; }
+            setTimeout(setupDispersion, 200);
+          }
+        });
+        gsap.to('.hero-sys', { opacity:1, duration:.8 });
+      });
     }
   });
-
-  tl.to('.hero-tag', { opacity:1, y:0, duration:.6, ease:'power3.out' })
-    .to('.hero-title', { opacity:1, y:0, duration:.5, ease:'power3.out' }, '-=.2')
-    .call(() => document.querySelector('.hero-title')?.classList.add('visible'))
-    .to('.hero-college', { opacity:1, y:0, duration:.5, ease:'power3.out' }, '-=.2')
-    .to('.hero-sys', { opacity:1, duration:.5 }, '-=.3');
 
   document.querySelectorAll('[data-anim]').forEach(el => {
     gsap.to(el, {
@@ -615,3 +670,162 @@ window.addEventListener('DOMContentLoaded', () => {
     }
   }, 5000);
 });
+
+// ===== REGISTRATION FORM =====
+(function() {
+  const form = document.getElementById('reg-form');
+  if (!form) return;
+
+  const step1 = document.getElementById('reg-step-1');
+  const step2 = document.getElementById('reg-step-2');
+  const step3 = document.getElementById('reg-step-3');
+  const toStep2Btn = document.getElementById('to-step-2');
+  const toStep1Btn = document.getElementById('to-step-1');
+  const eventError = document.getElementById('event-error');
+  const teamError = document.getElementById('team-error');
+  const selectedEventName = document.getElementById('selected-event-name');
+  const membersContainer = document.getElementById('members-container');
+  const teamSizeSelect = document.getElementById('team-size');
+  const regAnother = document.getElementById('reg-another');
+
+  const eventConfig = {
+    'Ideathon': { minTeam: 2, maxTeam: 4, fields: ['idea-title', 'idea-domain'] },
+    'App Development': { minTeam: 2, maxTeam: 4, fields: ['app-platform', 'app-techstack'] },
+    'Zerocrypt CTF': { minTeam: 2, maxTeam: 3, fields: ['ctf-experience'] },
+    'AI Prompt Battle': { minTeam: 1, maxTeam: 2, fields: ['ai-tool-pref'] },
+    'Code Relay': { minTeam: 4, maxTeam: 4, fields: ['relay-languages'] },
+    'Hack & Hunt': { minTeam: 2, maxTeam: 3, fields: ['hunt-experience'] },
+    'Green Tech Challenge': { minTeam: 3, maxTeam: 4, fields: ['greentech-domain'] },
+    'RoboInnovate': { minTeam: 3, maxTeam: 4, fields: ['robo-hardware'] }
+  };
+
+  const extraFieldDefs = {
+    'idea-title': { label: 'Idea Title / Theme', type: 'text', placeholder: 'Brief title of your idea' },
+    'idea-domain': { label: 'Domain', type: 'select', options: ['HealthTech', 'EdTech', 'FinTech', 'AgriTech', 'Sustainability', 'Other'] },
+    'app-platform': { label: 'Target Platform', type: 'select', options: ['Android', 'iOS', 'Cross-Platform', 'Web App'] },
+    'app-techstack': { label: 'Preferred Tech Stack', type: 'text', placeholder: 'e.g. Flutter, React Native, Kotlin' },
+    'ctf-experience': { label: 'CTF Experience Level', type: 'select', options: ['Beginner', 'Intermediate', 'Advanced'] },
+    'ai-tool-pref': { label: 'Preferred AI Tool', type: 'select', options: ['ChatGPT', 'Claude', 'Gemini', 'Midjourney', 'Other'] },
+    'relay-languages': { label: 'Languages Known (team)', type: 'text', placeholder: 'e.g. Python, Java, C++, JavaScript' },
+    'hunt-experience': { label: 'Puzzle/CTF Experience', type: 'select', options: ['First time', 'Done 1-3 events', 'Experienced'] },
+    'greentech-domain': { label: 'Focus Area', type: 'select', options: ['Renewable Energy', 'Waste Management', 'Water Conservation', 'Carbon Reduction', 'Other'] },
+    'robo-hardware': { label: 'Own Hardware/Kit?', type: 'select', options: ['Yes — Arduino/ESP32', 'Yes — Raspberry Pi', 'Yes — Other', 'No — Need Provided Kit'] }
+  };
+
+  function getSelectedEvent() {
+    const checked = form.querySelector('input[name="event"]:checked');
+    return checked ? checked.value : null;
+  }
+
+  function updateTeamSizeOptions(eventName) {
+    const cfg = eventConfig[eventName];
+    if (!cfg) return;
+    teamSizeSelect.innerHTML = '<option value="">Select</option>';
+    for (let i = cfg.minTeam; i <= cfg.maxTeam; i++) {
+      const label = i === 1 ? '1 (Individual)' : `${i} Members`;
+      teamSizeSelect.innerHTML += `<option value="${i}">${label}</option>`;
+    }
+  }
+
+  function renderExtraFields(eventName) {
+    const cfg = eventConfig[eventName];
+    if (!cfg) return '';
+    let html = '<div class="member-group"><span class="member-group-title">Event-Specific Details</span>';
+    for (const fid of cfg.fields) {
+      const def = extraFieldDefs[fid];
+      if (!def) continue;
+      html += `<div class="reg-field"><label for="${fid}">${def.label}</label>`;
+      if (def.type === 'select') {
+        html += `<select id="${fid}" required><option value="">Select</option>`;
+        for (const o of def.options) html += `<option value="${o}">${o}</option>`;
+        html += '</select>';
+      } else {
+        html += `<input type="text" id="${fid}" placeholder="${def.placeholder || ''}" required>`;
+      }
+      html += '</div>';
+    }
+    html += '</div>';
+    return html;
+  }
+
+  function renderMembers(count) {
+    let html = '';
+    const eventName = getSelectedEvent();
+    for (let i = 2; i <= count; i++) {
+      html += `<div class="member-group">
+        <span class="member-group-title">Member ${i}</span>
+        <div class="reg-field"><label for="m${i}-name">Full Name</label><input type="text" id="m${i}-name" placeholder="Member name" required></div>
+        <div class="reg-field"><label for="m${i}-email">Email</label><input type="email" id="m${i}-email" placeholder="email@college.edu" required></div>
+      </div>`;
+    }
+    html += renderExtraFields(eventName);
+    membersContainer.innerHTML = html;
+  }
+
+  toStep2Btn.addEventListener('click', () => {
+    const ev = getSelectedEvent();
+    if (!ev) {
+      eventError.textContent = 'Please select an event to continue.';
+      return;
+    }
+    eventError.textContent = '';
+    selectedEventName.textContent = ev;
+    updateTeamSizeOptions(ev);
+    membersContainer.innerHTML = renderExtraFields(ev);
+    step1.classList.add('reg-step-hidden');
+    step2.classList.remove('reg-step-hidden');
+    step2.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  });
+
+  toStep1Btn.addEventListener('click', () => {
+    step2.classList.add('reg-step-hidden');
+    step1.classList.remove('reg-step-hidden');
+  });
+
+  teamSizeSelect.addEventListener('change', () => {
+    const val = parseInt(teamSizeSelect.value, 10);
+    if (val && val > 1) {
+      renderMembers(val);
+    } else {
+      membersContainer.innerHTML = renderExtraFields(getSelectedEvent());
+    }
+  });
+
+  form.addEventListener('submit', (e) => {
+    e.preventDefault();
+    const teamName = document.getElementById('team-name').value.trim();
+    const leaderName = document.getElementById('leader-name').value.trim();
+    const leaderEmail = document.getElementById('leader-email').value.trim();
+    const leaderPhone = document.getElementById('leader-phone').value.trim();
+    const college = document.getElementById('college-name').value.trim();
+    const teamSize = teamSizeSelect.value;
+
+    if (!teamName || !leaderName || !leaderEmail || !leaderPhone || !college || !teamSize) {
+      teamError.textContent = 'Please fill in all required fields.';
+      return;
+    }
+
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(leaderEmail)) {
+      teamError.textContent = 'Please enter a valid email address.';
+      return;
+    }
+
+    teamError.textContent = '';
+
+    document.getElementById('success-event').textContent = getSelectedEvent();
+    document.getElementById('success-email').textContent = leaderEmail;
+
+    step2.classList.add('reg-step-hidden');
+    step3.classList.remove('reg-step-hidden');
+    step3.scrollIntoView({ behavior: 'smooth', block: 'center' });
+  });
+
+  regAnother.addEventListener('click', () => {
+    form.reset();
+    membersContainer.innerHTML = '';
+    step3.classList.add('reg-step-hidden');
+    step1.classList.remove('reg-step-hidden');
+    document.getElementById('register').scrollIntoView({ behavior: 'smooth', block: 'start' });
+  });
+})();

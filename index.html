@@ -371,6 +371,157 @@
     </div>
   </section>
 
+  <!-- ========== REGISTRATION ========== -->
+  <section class="section" id="register">
+    <div class="section-inner section-wide">
+      <div class="section-header" data-anim>
+        <span class="section-label">Register</span>
+        <h2 class="section-heading">
+          <span>Secure your</span>
+          <span class="accent-text">spot.</span>
+        </h2>
+      </div>
+
+      <div class="reg-wrap" data-anim>
+        <form class="reg-form" id="reg-form" novalidate>
+
+          <!-- Step 1: Select Event -->
+          <div class="reg-step" id="reg-step-1">
+            <h3 class="reg-step-title">Choose your event</h3>
+            <div class="reg-events-grid">
+              <label class="reg-event-option">
+                <input type="radio" name="event" value="Ideathon" required>
+                <div class="reg-event-card">
+                  <span class="reg-ev-num">01</span>
+                  <span class="reg-ev-name">Ideathon</span>
+                  <span class="reg-ev-team">Team: 2-4 members</span>
+                </div>
+              </label>
+              <label class="reg-event-option">
+                <input type="radio" name="event" value="App Development">
+                <div class="reg-event-card">
+                  <span class="reg-ev-num">02</span>
+                  <span class="reg-ev-name">App Development</span>
+                  <span class="reg-ev-team">Team: 2-4 members</span>
+                </div>
+              </label>
+              <label class="reg-event-option">
+                <input type="radio" name="event" value="Zerocrypt CTF">
+                <div class="reg-event-card">
+                  <span class="reg-ev-num">03</span>
+                  <span class="reg-ev-name">Zerocrypt CTF</span>
+                  <span class="reg-ev-team">Team: 2-3 members</span>
+                </div>
+              </label>
+              <label class="reg-event-option">
+                <input type="radio" name="event" value="AI Prompt Battle">
+                <div class="reg-event-card">
+                  <span class="reg-ev-num">04</span>
+                  <span class="reg-ev-name">AI Prompt Battle</span>
+                  <span class="reg-ev-team">Individual / Duo</span>
+                </div>
+              </label>
+              <label class="reg-event-option">
+                <input type="radio" name="event" value="Code Relay">
+                <div class="reg-event-card">
+                  <span class="reg-ev-num">05</span>
+                  <span class="reg-ev-name">Code Relay</span>
+                  <span class="reg-ev-team">Team: 4 members</span>
+                </div>
+              </label>
+              <label class="reg-event-option">
+                <input type="radio" name="event" value="Hack & Hunt">
+                <div class="reg-event-card">
+                  <span class="reg-ev-num">06</span>
+                  <span class="reg-ev-name">Hack & Hunt</span>
+                  <span class="reg-ev-team">Team: 2-3 members</span>
+                </div>
+              </label>
+              <label class="reg-event-option">
+                <input type="radio" name="event" value="Green Tech Challenge">
+                <div class="reg-event-card">
+                  <span class="reg-ev-num">07</span>
+                  <span class="reg-ev-name">Green Tech</span>
+                  <span class="reg-ev-team">Team: 3-4 members</span>
+                </div>
+              </label>
+              <label class="reg-event-option">
+                <input type="radio" name="event" value="RoboInnovate">
+                <div class="reg-event-card">
+                  <span class="reg-ev-num">08</span>
+                  <span class="reg-ev-name">RoboInnovate</span>
+                  <span class="reg-ev-team">Team: 3-4 members</span>
+                </div>
+              </label>
+            </div>
+            <p class="reg-error" id="event-error"></p>
+            <button type="button" class="btn-primary reg-next" id="to-step-2">Next: Team Details →</button>
+          </div>
+
+          <!-- Step 2: Team Details -->
+          <div class="reg-step reg-step-hidden" id="reg-step-2">
+            <h3 class="reg-step-title">Team Details — <span id="selected-event-name"></span></h3>
+            <div class="reg-fields">
+              <div class="reg-field">
+                <label for="team-name">Team Name</label>
+                <input type="text" id="team-name" placeholder="e.g. ByteForce" required>
+              </div>
+              <div class="reg-field">
+                <label for="leader-name">Team Leader Name</label>
+                <input type="text" id="leader-name" placeholder="Full name" required>
+              </div>
+              <div class="reg-row">
+                <div class="reg-field">
+                  <label for="leader-email">Email</label>
+                  <input type="email" id="leader-email" placeholder="email@college.edu" required>
+                </div>
+                <div class="reg-field">
+                  <label for="leader-phone">Phone</label>
+                  <input type="tel" id="leader-phone" placeholder="+91 XXXXX XXXXX" required>
+                </div>
+              </div>
+              <div class="reg-field">
+                <label for="college-name">College / Institution</label>
+                <input type="text" id="college-name" placeholder="e.g. SJB Institute of Technology" required>
+              </div>
+              <div class="reg-field">
+                <label for="team-size">Number of Team Members (including leader)</label>
+                <select id="team-size" required>
+                  <option value="">Select</option>
+                  <option value="1">1 (Individual)</option>
+                  <option value="2">2 Members</option>
+                  <option value="3">3 Members</option>
+                  <option value="4">4 Members</option>
+                </select>
+              </div>
+
+              <div id="members-container"></div>
+            </div>
+            <p class="reg-error" id="team-error"></p>
+            <div class="reg-btn-row">
+              <button type="button" class="btn-ghost reg-back" id="to-step-1">← Back</button>
+              <button type="submit" class="btn-primary">Register Team →</button>
+            </div>
+          </div>
+
+          <!-- Step 3: Success -->
+          <div class="reg-step reg-step-hidden" id="reg-step-3">
+            <div class="reg-success">
+              <div class="reg-success-icon">
+                <svg width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="#ff4d00" stroke-width="2"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
+              </div>
+              <h3 class="reg-success-title">Registration Submitted!</h3>
+              <p class="reg-success-desc">Your team has been registered for <strong id="success-event"></strong>. We'll send a confirmation to <strong id="success-email"></strong>.</p>
+              <p class="reg-success-note">Keep an eye on your inbox for updates on prelims and event-day details.</p>
+              <button type="button" class="btn-ghost" id="reg-another">Register for Another Event →</button>
+            </div>
+          </div>
+
+        </form>
+      </div>
+    </div>
+  </section>
+
   <!-- ========== FOOTER ========== -->
   <footer class="footer" id="contact">
     <div class="footer-inner">
